@@ -1,6 +1,8 @@
 from sklearn.metrics import accuracy_score, f1_score, recall_score, classification_report
 from sklearn.model_selection import GridSearchCV
 from sklearn.linear_model import LogisticRegression
+import joblib
+import numpy as np
 
 def eval_model(model, xtest, ytest):
     preds = model.predict(xtest)
@@ -8,7 +10,7 @@ def eval_model(model, xtest, ytest):
     f1 = f1_score(ytest, preds)
     recall = recall_score(ytest, preds)
     classification_rpt = classification_report(ytest, preds)
-    return accuracy, f1, recall, classification_rpt
+    return preds, accuracy, f1, recall, classification_rpt
 
 
 #Using GridSearchCV to get optimum score by tuning the hyperparameters
@@ -20,4 +22,8 @@ def GridSearch(xtrain, xtest, ytrain, ytest):
 
     gs_log_reg = GridSearchCV(LogisticRegression(), param_grid = gs_grid, cv = 5, verbose = True)
     gs_log_reg.fit(xtrain, ytrain)
+    pred = gs_log_reg.predict(xtest)
+    np.savez('pred_data/data.npz', xtr = xtrain, xts = xtest, ytr = ytrain, yts = ytest, preds = pred)
+    print("--saved data--")
+    joblib.dump(gs_log_reg, "model/model.joblib")
     return gs_log_reg.best_params_, gs_log_reg.score(xtest, ytest)
